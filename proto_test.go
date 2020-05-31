@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	 "encoding/xml"
 	"testing"
 
 	"github.com/akresling/protobench/pb"
@@ -51,9 +52,11 @@ func TestDataAllocationsSmall(_ *testing.T) {
 	bs := PBSmall
 	j, _ := json.Marshal(&bs)
 	p, _ := proto.Marshal(&bs)
+	x, _ := xml.Marshal(&bs)
 
 	printInfo(j, "json")
 	printInfo(p, "protobuf")
+	printInfo(x, "xml")
 	fmt.Printf("\n")
 }
 
@@ -62,9 +65,11 @@ func TestDataAllocations(_ *testing.T) {
 	bs := PBMedium
 	j, _ := json.Marshal(&bs)
 	p, _ := proto.Marshal(&bs)
+	x, _ := xml.Marshal(&bs)
 
 	printInfo(j, "json")
 	printInfo(p, "protobuf")
+	printInfo(x, "xml")
 	fmt.Printf("\n")
 }
 
@@ -73,9 +78,11 @@ func TestDataAllocationsLarge(_ *testing.T) {
 	bs := PBLarge
 	j, _ := json.Marshal(&bs)
 	p, _ := proto.Marshal(&bs)
+	x, _ := xml.Marshal(&bs)
 
 	printInfo(j, "json")
 	printInfo(p, "protobuf")
+	printInfo(x, "xml")
 	fmt.Printf("\n")
 }
 
@@ -104,6 +111,36 @@ func BenchmarkJSONMarshal(b *testing.B) {
 		b.ReportAllocs()
 		for n := 0; n < b.N; n++ {
 			d, _ := json.Marshal(&l)
+			_ = d
+		}
+	})
+	fmt.Printf("\n")
+}
+func BenchmarkXMLMarshal(b *testing.B) {
+	s := PBSmall
+	m := PBMedium
+	l := PBLarge
+
+	b.ResetTimer()
+
+	b.Run("SmallData", func(b *testing.B) {
+		b.ReportAllocs()
+		for n := 0; n < b.N; n++ {
+			d, _ := xml.Marshal(&s)
+			_ = d
+		}
+	})
+	b.Run("MediumData", func(b *testing.B) {
+		b.ReportAllocs()
+		for n := 0; n < b.N; n++ {
+			d, _ := xml.Marshal(&m)
+			_ = d
+		}
+	})
+	b.Run("LargeData", func(b *testing.B) {
+		b.ReportAllocs()
+		for n := 0; n < b.N; n++ {
+			d, _ := xml.Marshal(&l)
 			_ = d
 		}
 	})
@@ -172,6 +209,41 @@ func BenchmarkJSONUnmarshal(b *testing.B) {
 		b.ReportAllocs()
 		for n := 0; n < b.N; n++ {
 			_ = json.Unmarshal(ld, &lf)
+		}
+	})
+	fmt.Printf("\n")
+}
+func BenchmarkXMLUnmarshal(b *testing.B) {
+	s := PBSmall
+	m := PBMedium
+	l := PBLarge
+
+	sd, _ := xml.Marshal(&s)
+	md, _ := xml.Marshal(&m)
+	ld, _ := xml.Marshal(&l)
+
+	var sf pb.BenchSmall
+	var mf pb.BenchMedium
+	var lf pb.BenchLarge
+
+	b.ResetTimer()
+
+	b.Run("SmallData", func(b *testing.B) {
+		b.ReportAllocs()
+		for n := 0; n < b.N; n++ {
+			_ = xml.Unmarshal(sd, &sf)
+		}
+	})
+	b.Run("MediumData", func(b *testing.B) {
+		b.ReportAllocs()
+		for n := 0; n < b.N; n++ {
+			_ = xml.Unmarshal(md, &mf)
+		}
+	})
+	b.Run("LargeData", func(b *testing.B) {
+		b.ReportAllocs()
+		for n := 0; n < b.N; n++ {
+			_ = xml.Unmarshal(ld, &lf)
 		}
 	})
 	fmt.Printf("\n")
